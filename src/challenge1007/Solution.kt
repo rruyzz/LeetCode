@@ -15,20 +15,89 @@ package challenge1007
 
 class Solution {
 
-    enum class DIRECTION { TOP, BOTTOM }
 
     fun minDominoRotations(tops: IntArray, bottoms: IntArray): Int {
-        for (i in 0..tops.size - 1) {
-            print("${tops[i]} ")
-        }
-        println()
-        for (i in 0..tops.size - 1) {
-            print("${bottoms[i]} ")
-        }
-        println()
         // find the number that should be inline
         val baseNumber = findBaseNumber(tops, bottoms)
-        println("Base number $baseNumber")
+        if (hasBaseNumber(baseNumber, tops, bottoms)) return -1
+        return rotate(baseNumber, tops, bottoms)
+    }
+
+    private fun rotate(baseNumber: Int, tops: IntArray, bottoms: IntArray): Int {
+        var differentBottom = 0
+        var differentTop = 0
+        for (i in 0..tops.size - 1) {
+            if (tops[i] != baseNumber && bottoms[i] != baseNumber) return -1
+            if (tops[i] == baseNumber && bottoms[i] != baseNumber) differentBottom += 1
+            if (bottoms[i] == baseNumber && tops[i] != baseNumber) differentTop += 1
+        }
+        return if (differentBottom < differentTop) differentBottom else if (differentTop < differentBottom) differentTop else differentBottom
+    }
+
+    private fun findBaseNumber(tops: IntArray, bottoms: IntArray): Int {
+        val dominoTop = mutableMapOf(1 to 0, 2 to 0, 3 to 0, 4 to 0, 5 to 0, 6 to 0)
+        val dominoBottom = mutableMapOf(1 to 0, 2 to 0, 3 to 0, 4 to 0, 5 to 0, 6 to 0)
+        tops.forEach { topValue ->
+            dominoTop[topValue] = dominoTop.getOrDefault(topValue, 0) + 1
+        }
+        bottoms.forEach { topValue ->
+            dominoBottom[topValue] = dominoBottom.getOrDefault(topValue, 0) + 1
+        }
+
+        val topMaxIncrement: Int = dominoTop.values.maxOrNull() ?: 0
+        val bottomMaxIncrement: Int = dominoBottom.values.maxOrNull() ?: 0
+
+        val baseNumber = if (topMaxIncrement >= bottomMaxIncrement) getMaxValue(dominoTop, dominoBottom)
+        else getMaxValue(dominoBottom, dominoTop)
+        return baseNumber
+    }
+
+    private fun getMaxValue(mapWithMaxIncrement: MutableMap<Int, Int>, mapToCompare: MutableMap<Int, Int>): Int {
+        val maxIncrement = mapWithMaxIncrement.values.maxOrNull()
+        val filtered = mapWithMaxIncrement.filterValues { it == maxIncrement }
+        if (filtered.size == 1) return filtered.entries.firstOrNull { it.value == maxIncrement }?.key ?: -1
+
+        val maxValueCompare = mapToCompare.values.maxOrNull()
+        val filteredCompare = mapToCompare.filterValues { it == maxIncrement }
+        if (filtered.size == 1) return maxValueCompare ?: -1
+        filteredCompare.forEach { key, value ->
+            filtered.filterKeys { it == key }
+        }
+
+        return filteredCompare.minByOrNull { it.key }?.key ?: -1
+    }
+
+    private fun hasBaseNumber(baseNumber: Int, tops: IntArray, bottoms: IntArray): Boolean {
+        for (i in 0..tops.size - 1) {
+            if (tops[i] != baseNumber && bottoms[i] != baseNumber) return true
+        }
+        return false
+    }
+}
+
+fun main() {
+//    println(Solution().minDominoRotations(intArrayOf(1, 2, 1, 1, 1, 2, 2, 2), intArrayOf(2, 1, 2, 2, 2, 2, 2, 2)))
+    println(Solution().minDominoRotations(intArrayOf(2, 1, 2, 4, 2, 2), intArrayOf(5, 2, 6, 2, 3, 2)))
+//    println(Solution().minDominoRotations(intArrayOf(1, 1, 1, 1, 1, 1), intArrayOf(1, 1, 1, 1, 1, 1)))
+//    println(Solution().minDominoRotations(intArrayOf(2, 2, 2, 4, 4, 4), intArrayOf(4, 4, 4, 2, 3, 2)))
+//    println(Solution().minDominoRotations(intArrayOf(1, 2, 3, 4, 6), intArrayOf(6, 6, 6, 6, 5)))
+//    println(Solution().minDominoRotations(intArrayOf(1,2,1,1,1,2,2,2), intArrayOf(2,1,2,2,2,2,2,2)))
+}
+
+//3,5,1,2,3
+//3,6,3,3,4
+
+//1,2,1,1,1,2,2,2
+//2,1,2,2,2,2,2,2
+
+//2,1,2,4,2,2
+//5,2,6,2,3,2
+
+class Solutions {
+
+    fun minDominoRotations(tops: IntArray, bottoms: IntArray): Int {
+        // find the number that should be inline
+        val baseNumber = findBaseNumber(tops, bottoms)
         if (hasBaseNumber(baseNumber, tops, bottoms)) return -1
         return rotate(baseNumber, tops, bottoms)
     }
@@ -55,16 +124,10 @@ class Solution {
             dominoBottom[topValue] = dominoBottom.getOrDefault(topValue, 0) + 1
         }
 
+
         val topMaxIncrement: Int = dominoTop.values.maxOrNull() ?: 0
         val bottomMaxIncrement: Int = dominoBottom.values.maxOrNull() ?: 0
 
-        println("topMaxIncrement $topMaxIncrement bottomMaxIncrement $bottomMaxIncrement")
-        println("dominoTop $dominoTop")
-        println("dominoBottom $dominoBottom")
-        val baseTop = dominoTop.maxBy { it.value }.key
-        val baseBottom = dominoBottom.maxBy { it.value }.key
-        println("baseTop $baseTop increment ${dominoTop.maxBy { it.value }.value}")
-        println("baseBottom $baseBottom increment ${dominoBottom.maxBy { it.value }.value}")
         val baseNumber = if (topMaxIncrement >= bottomMaxIncrement) dominoTop.maxBy { it.value }.key
         else dominoBottom.maxBy { it.value }.key
 
@@ -73,27 +136,8 @@ class Solution {
 
     private fun hasBaseNumber(baseNumber: Int, tops: IntArray, bottoms: IntArray): Boolean {
         for (i in 0..tops.size - 1) {
-//            println("${tops[i]} ${bottoms[i]}")
             if (tops[i] != baseNumber && bottoms[i] != baseNumber) return true
         }
         return false
     }
 }
-
-fun main() {
-//    println(Solution().minDominoRotations(intArrayOf(1, 2, 1, 1, 1, 2, 2, 2), intArrayOf(2, 1, 2, 2, 2, 2, 2, 2)))
-//    println(Solution().minDominoRotations(intArrayOf(2, 1, 2, 4, 2, 2), intArrayOf(5, 2, 6, 2, 3, 2)))
-//    println(Solution().minDominoRotations(intArrayOf(1, 1, 1, 1, 1, 1), intArrayOf(1, 1, 1, 1, 1, 1)))
-    println(Solution().minDominoRotations(intArrayOf(2, 2, 2, 4, 4, 4), intArrayOf(4, 4, 4, 2, 3, 2)))
-//    println(Solution().minDominoRotations(intArrayOf(1, 2, 3, 4, 6), intArrayOf(6, 6, 6, 6, 5)))
-//    println(Solution().minDominoRotations(intArrayOf(1,2,1,1,1,2,2,2), intArrayOf(2,1,2,2,2,2,2,2)))
-}
-
-//3,5,1,2,3
-//3,6,3,3,4
-
-//1,2,1,1,1,2,2,2
-//2,1,2,2,2,2,2,2
-
-//2,1,2,4,2,2
-//5,2,6,2,3,2
